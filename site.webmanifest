@@ -1,0 +1,23 @@
+{
+  "name": "Marce & Tony — Live Music Roatán",
+  "short_name": "Marce & Tony",
+  "description": "Marce & Tony are a bilingual live music duo on Roatán — vocals and guitars for weddings, private and corporate events, proposals, hotels and restaurants. Nineteen years on New York stages, now based in the Bay Islands.",
+  "start_url": "/Marela-And-Tony/",
+  "display": "standalone",
+  "background_color": "#0b1f2a",
+  "theme_color": "#0b1f2a",
+  "icons": [
+    {
+      "src": "/Marela-And-Tony/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/Marela-And-Tony/img/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

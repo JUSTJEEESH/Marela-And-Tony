@@ -1,0 +1,6 @@
+# Marce & Tony — https://justjeeesh.github.io/Marela-And-Tony
+User-agent: *
+Allow: /
+Disallow: /thanks/
+
+Sitemap: https://justjeeesh.github.io/Marela-And-Tony/sitemap.xml
