@@ -1,0 +1,76 @@
+# Builds the site and publishes it to GitHub Pages on every push.
+#
+# The first successful run also switches Pages on for this repository
+# (configure-pages with enablement: true), so there is nothing to click in
+# Settings beforehand.
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - claude/roatan-music-website-5h4yn0
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never let two deploys race; queue them instead of cancelling, so the last
+# push always ends up being the version that is live.
+concurrency:
+  group: github-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure Pages
+        id: pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      # A project site is served from https://<user>.github.io/<repo>/, so the
+      # build needs both the full URL (for canonical tags, Open Graph and the
+      # sitemap) and the path prefix (for every internal href and src).
+      - name: Build the site
+        env:
+          SITE_URL: ${{ steps.pages.outputs.base_url }}
+          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+        run: node build.js
+
+      - name: Check the build produced what we expect
+        run: |
+          set -e
+          for f in index.html 404.html sitemap.xml robots.txt .nojekyll \
+                   weddings/index.html contact/index.html css/style.css js/main.js; do
+            test -s "dist/$f" || { echo "MISSING or empty: dist/$f"; exit 1; }
+          done
+          echo "All expected files present."
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

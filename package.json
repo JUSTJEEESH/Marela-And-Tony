@@ -1,17 +1,16 @@
 {
-  "name": "marcela-and-tony",
+  "name": "marce-and-tony",
   "version": "1.0.0",
   "private": true,
-  "description": "Marcela & Tony — live acoustic music on Roatán, Honduras. Static marketing + booking site.",
+  "description": "Marce & Tony — live music on Roatán, Honduras. Static marketing and booking site.",
   "scripts": {
     "build": "node build.js",
     "dev": "node build.js --watch",
-    "serve": "node build.js && node server.js"
+    "serve": "node build.js && node server.js",
+    "build:pages": "SITE_URL=https://justjeeesh.github.io/Marela-And-Tony BASE_PATH=/Marela-And-Tony node build.js",
+    "serve:pages": "npm run build:pages && node pagesim.js"
   },
   "engines": {
     "node": ">=18"
-  },
-  "devDependencies": {
-    "playwright": "^1.62.1"
   }
 }

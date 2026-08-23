@@ -46,6 +46,8 @@
   --shadow-lg:0 34px 80px -30px rgba(0,0,0,.85);
 
   --ease:cubic-bezier(.22,.68,.28,1);
+
+  --head-h:64px;          /* grows on desktop, see the min-width block */
 }
 
 /* ── Reset ────────────────────────────────────────────────────────────────── */
@@ -58,13 +60,19 @@ html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
 body{
   margin:0;
   font-family:var(--sans);
-  font-size:17px;
-  line-height:1.68;
+  font-size:16px;
+  line-height:1.65;
   color:var(--ink-soft);
   background:var(--bg);
   -webkit-font-smoothing:antialiased;
   overflow-x:hidden;
 }
+/* Mobile-first: 16px base everywhere, stepping up only once there is room.
+   16px is also the floor that stops iOS Safari zooming when a field is focused. */
+@media (min-width:768px){ body{font-size:17px;line-height:1.68} }
+
+/* Every interactive thing gets a real touch target and no 300ms tap delay. */
+a,button,input,select,textarea,summary,label{touch-action:manipulation}
 img,svg,video{max-width:100%;height:auto;display:block}
 a{color:var(--gold);text-decoration:none}
 a:hover{color:var(--amber)}
@@ -84,7 +92,7 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .center{text-align:center}
 .narrow-p{max-width:60ch;margin-inline:auto}
 
-.band{padding:clamp(3.75rem,8vw,6.5rem) 0;position:relative}
+.band{padding:clamp(2.75rem,8vw,6.5rem) 0;position:relative}
 .band-alt{background:var(--bg-alt)}
 .band-alt::before,.band-alt::after{content:"";position:absolute;left:0;right:0;height:1px;background:var(--line-soft)}
 .band-alt::before{top:0}.band-alt::after{bottom:0}
@@ -107,18 +115,19 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .eyebrow{display:inline-block;font-size:.76rem;font-weight:700;letter-spacing:.19em;
   text-transform:uppercase;color:var(--coral-lt);margin-bottom:.85rem}
 .micro{font-size:.86rem;color:var(--ink-mute);line-height:1.55}
-.text-link{font-weight:600;border-bottom:1px solid rgba(255,206,122,.4);padding-bottom:1px}
+.text-link{display:inline-flex;align-items:center;min-height:44px;font-weight:600;
+  border-bottom:1px solid rgba(255,206,122,.4);padding-bottom:1px}
 .text-link:hover{border-color:var(--amber)}
 .prose h3{margin-top:2.2rem}
 .prose p{max-width:68ch}
 
 /* ── Buttons ──────────────────────────────────────────────────────────────── */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;
-  padding:.82rem 1.5rem;border-radius:100px;font-weight:600;font-size:.97rem;
+  min-height:48px;padding:.82rem 1.5rem;border-radius:100px;font-weight:600;font-size:.97rem;
   border:1px solid transparent;cursor:pointer;text-align:center;
   transition:transform .18s var(--ease),box-shadow .18s var(--ease),background .18s var(--ease)}
-.btn-lg{padding:1rem 1.9rem;font-size:1.04rem}
-.btn-sm{padding:.58rem 1.15rem;font-size:.9rem}
+.btn-lg{min-height:54px;padding:1rem 1.9rem;font-size:1.04rem}
+.btn-sm{min-height:40px;padding:.55rem 1.15rem;font-size:.9rem}
 .btn-block{display:flex;width:100%}
 .btn-primary{background:linear-gradient(135deg,var(--amber),var(--coral));color:#2a0d0c;
   box-shadow:0 10px 30px -12px rgba(232,84,78,.85)}
@@ -139,8 +148,9 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   -webkit-backdrop-filter:blur(16px) saturate(150%);
   border-bottom:1px solid var(--line-soft);transition:background .25s var(--ease)}
 .site-head.scrolled{background:rgba(7,23,32,.94)}
-.head-inner{display:flex;align-items:center;gap:1.25rem;min-height:70px}
-.brand{display:flex;align-items:center;gap:.6rem;color:var(--ink);flex:none}
+.head-inner{display:flex;align-items:center;gap:1rem;min-height:var(--head-h)}
+.brand{display:flex;align-items:center;gap:.6rem;color:var(--ink);flex:none;
+  min-height:44px;padding-right:.25rem}
 .brand:hover{color:var(--ink)}
 .brand-mark{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;
   background:linear-gradient(135deg,var(--amber),var(--coral));color:#2a0d0c}
@@ -149,42 +159,56 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .brand-text i{color:var(--amber);font-style:italic;font-weight:400}
 .brand-text.big{font-size:1.65rem;display:block;color:var(--ink);margin-bottom:.5rem}
 
-.nav{margin-left:auto}
-.nav ul{display:flex;gap:.15rem;list-style:none;margin:0;padding:0}
-.nav a{display:block;padding:.5rem .72rem;border-radius:8px;font-size:.895rem;
-  font-weight:500;color:var(--ink-soft);white-space:nowrap;transition:color .15s,background .15s}
-.nav a:hover{color:var(--ink);background:var(--surface)}
+/* Mobile first: the menu IS a drawer. It only becomes a horizontal bar once
+   there is enough width to hold one, which is the last breakpoint to fire. */
+.nav{position:fixed;inset:var(--head-h) 0 auto;z-index:99;margin:0;
+  /* Solid, not translucent: a nav drawer that lets the page bleed through is
+     harder to read, and backdrop-filter is unreliable over a fixed header. */
+  background:var(--navy-900);border-bottom:1px solid var(--line);
+  box-shadow:0 24px 50px -20px rgba(0,0,0,.8);
+  max-height:0;overflow:hidden;transition:max-height .32s var(--ease)}
+.nav.open{max-height:calc(100vh - var(--head-h));max-height:calc(100dvh - var(--head-h));
+  overflow-y:auto;-webkit-overflow-scrolling:touch}
+.nav ul{display:flex;flex-direction:column;gap:0;list-style:none;margin:0;
+  padding:.4rem 0 1.4rem}
+.nav a{display:flex;align-items:center;min-height:52px;
+  padding:.8rem clamp(1.15rem,4vw,2rem);font-size:1.02rem;font-weight:500;
+  color:var(--ink-soft);border-bottom:1px solid var(--line-soft);
+  transition:color .15s,background .15s}
+.nav a:hover,.nav a:active{color:var(--ink);background:var(--surface)}
 .nav a[aria-current="page"]{color:var(--gold)}
-.head-cta{flex:none}
-.burger{display:none;flex-direction:column;gap:5px;background:none;border:0;
-  padding:.55rem;cursor:pointer;margin-left:auto}
+
+.head-cta{display:none}
+
+.burger{display:flex;flex-direction:column;justify-content:center;align-items:center;
+  gap:5px;width:44px;height:44px;background:none;border:0;padding:0;cursor:pointer;
+  margin-left:auto;flex:none}
 .burger span{display:block;width:23px;height:2px;background:var(--ink);border-radius:2px;
   transition:transform .25s var(--ease),opacity .2s}
 .burger[aria-expanded="true"] span:nth-child(1){transform:translateY(7px) rotate(45deg)}
 .burger[aria-expanded="true"] span:nth-child(2){opacity:0}
 .burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
 
-@media (max-width:1080px){
-  .head-cta{display:none}
-  .burger{display:flex}
-  .nav{position:fixed;inset:70px 0 auto;background:rgba(7,23,32,.985);
-    backdrop-filter:blur(20px);border-bottom:1px solid var(--line);
-    max-height:0;overflow:hidden;transition:max-height .32s var(--ease);margin:0}
-  .nav.open{max-height:78vh;overflow-y:auto}
-  .nav ul{flex-direction:column;gap:0;padding:.6rem 0 1.5rem}
-  .nav a{padding:.95rem clamp(1.15rem,4vw,2rem);border-radius:0;font-size:1.05rem;
-    border-bottom:1px solid var(--line-soft)}
+@media (min-width:1081px){
+  :root{--head-h:70px}
+  .nav{position:static;max-height:none;overflow:visible;background:none;
+    box-shadow:none;border-bottom:0;margin-left:auto}
+  .nav ul{flex-direction:row;gap:.15rem;padding:0}
+  .nav a{min-height:0;padding:.5rem .72rem;border-radius:8px;font-size:.895rem;
+    white-space:nowrap;border-bottom:0}
+  .head-cta{display:block;flex:none}
+  .burger{display:none}
 }
 
 /* ── Hero ─────────────────────────────────────────────────────────────────── */
 .hero{position:relative;isolation:isolate;overflow:hidden;
-  padding:clamp(3.5rem,11vw,7.5rem) 0 clamp(4.5rem,11vw,7.5rem);text-align:center}
+  padding:clamp(2.75rem,11vw,7.5rem) 0 clamp(3rem,11vw,7.5rem);text-align:center}
 .hero-bg{position:absolute;inset:0;z-index:-2}
 .hero-sky{position:absolute;inset:0;
   background:linear-gradient(178deg,#061620 0%,#0a2331 38%,#2e2440 64%,#7e3b48 82%,#c85a4a 93%,#ef8a55 100%)}
 /* The sun sits low, behind the horizon line, so it frames the copy
    instead of burning through the middle of it. */
-.hero-sun{position:absolute;left:50%;bottom:-16%;width:min(760px,120vw);aspect-ratio:1;
+.hero-sun{position:absolute;left:50%;bottom:-16%;width:min(760px,100%);aspect-ratio:1;
   transform:translateX(-50%);border-radius:50%;
   background:radial-gradient(circle,rgba(255,214,140,.72) 0%,rgba(255,154,90,.34) 38%,transparent 66%);
   filter:blur(18px)}
@@ -219,8 +243,8 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute)}
 .creds-list{display:flex;flex-wrap:wrap;justify-content:center;gap:.5rem .55rem;
   list-style:none;margin:0;padding:0}
-.creds-list li{font-family:var(--serif);font-size:clamp(.95rem,1.9vw,1.22rem);
-  font-weight:600;color:var(--sand-100);padding:.42rem 1.05rem;border-radius:100px;
+.creds-list li{font-family:var(--serif);font-size:clamp(.88rem,1.9vw,1.22rem);
+  font-weight:600;color:var(--sand-100);padding:.4rem .9rem;border-radius:100px;
   background:var(--surface);border:1px solid var(--line);white-space:nowrap}
 .creds-note{margin:1.35rem auto 0;max-width:62ch;text-align:center;
   font-size:.87rem;color:var(--ink-mute);line-height:1.55}
@@ -239,8 +263,9 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .side-friday b{color:var(--coral-lt)}
 
 .tick{list-style:none;padding:0;margin:0}
-.tick li{position:relative;padding-left:1.7rem;margin-bottom:.62rem;font-size:.95rem;line-height:1.5}
-.tick li::before{content:"";position:absolute;left:0;top:.5em;width:9px;height:5px;
+.tick li{position:relative;padding-left:1.7rem;margin-bottom:.62rem;font-size:.95rem;line-height:1.55}
+.tick li a{display:inline-flex;align-items:center;min-height:44px}
+.tick li::before{content:"";position:absolute;left:0;top:.62em;width:9px;height:5px;
   border-left:2px solid var(--teal);border-bottom:2px solid var(--teal);
   transform:rotate(-45deg)}
 .tick-sm li{font-size:.89rem;margin-bottom:.48rem}
@@ -276,8 +301,9 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   background:linear-gradient(140deg,rgba(255,154,90,.24),rgba(232,84,78,.13));
   color:var(--amber);margin-bottom:1.15rem}
 .page-hero.center .page-hero-icon{margin-inline:auto}
-.crumbs{font-size:.82rem;color:var(--ink-mute);margin-bottom:1.15rem}
-.crumbs a{color:var(--ink-mute)}
+.crumbs{display:flex;align-items:center;flex-wrap:wrap;font-size:.85rem;
+  color:var(--ink-mute);margin-bottom:.6rem}
+.crumbs a{display:inline-flex;align-items:center;min-height:44px;color:var(--ink-mute)}
 .crumbs a:hover{color:var(--gold)}
 .crumbs span[aria-hidden]{margin:0 .35rem;opacity:.5}
 
@@ -308,17 +334,17 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   padding:1.65rem;border-radius:var(--r-lg);
   background:linear-gradient(140deg,rgba(255,154,90,.15),rgba(232,84,78,.07));
   border:1px solid rgba(255,154,90,.34)}
-.fc-time{flex:none;text-align:center;padding-right:1.5rem;border-right:1px solid var(--line);
-  min-width:118px}
+.fc-time{flex:none;width:100%;display:flex;align-items:baseline;gap:.7rem;
+  padding:0 0 1rem;border-bottom:1px solid var(--line);text-align:left}
 .fc-day{display:block;font-family:var(--serif);font-size:1.55rem;font-weight:700;color:var(--gold)}
 .fc-hours{display:block;font-size:.92rem;color:var(--ink-mute);margin-top:.15rem}
 .fc-body{flex:1;min-width:190px}
 .fc-body h3{font-family:var(--serif);font-size:1.4rem;font-weight:600;margin:0 0 .2rem}
 .fc-body p{margin:0;font-size:.95rem}
 .fc-note{margin-top:.5rem!important;font-size:.86rem!important;color:var(--ink-mute)}
-@media (max-width:520px){
-  .fc-time{border-right:0;border-bottom:1px solid var(--line);padding:0 0 1rem;
-    width:100%;text-align:left;display:flex;align-items:baseline;gap:.7rem}
+@media (min-width:521px){
+  .fc-time{width:auto;display:block;text-align:center;min-width:118px;
+    padding:0 1.5rem 0 0;border-bottom:0;border-right:1px solid var(--line)}
 }
 
 .friday-tag{display:inline-block;font-size:.68rem;font-weight:800;letter-spacing:.16em;
@@ -335,15 +361,18 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .friday-strip-inner{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;
   padding-block:1.15rem}
 .friday-strip p{margin:0;font-size:.92rem;color:var(--ink-mute)}
+/* Inline sentence link, so it cannot become a block — padding plus a matching
+   negative margin grows the touch area without disturbing the line box. */
+.friday-strip p a{padding:.95rem .3rem;margin:-.95rem -.3rem}
 .friday-strip .friday-tag{margin:0}
 
 /* ── Gigs ─────────────────────────────────────────────────────────────────── */
 .gigs{list-style:none;padding:0;margin:2rem 0 1.5rem;display:grid;gap:.7rem}
-.gig{display:flex;align-items:center;gap:1.25rem;padding:1.05rem 1.35rem;
+.gig{display:flex;align-items:center;gap:.95rem;padding:.95rem 1.05rem;
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
   transition:border-color .2s,background .2s}
 .gig:hover{border-color:rgba(255,154,90,.4);background:var(--surface-2)}
-.gig-date{flex:none;display:grid;place-items:center;width:62px;padding:.45rem 0;
+.gig-date{flex:none;display:grid;place-items:center;width:56px;padding:.45rem 0;
   border-radius:10px;background:rgba(255,154,90,.13);border:1px solid rgba(255,154,90,.26);
   line-height:1.1}
 .gd-day{font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--amber)}
@@ -383,7 +412,7 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .faq{margin-top:2.2rem;border-top:1px solid var(--line)}
 .faq-item{border-bottom:1px solid var(--line)}
 .faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:1.15rem;
-  padding:1.2rem 0;cursor:pointer;list-style:none;font-weight:600;font-size:1.04rem;
+  min-height:56px;padding:1.15rem 0;cursor:pointer;list-style:none;font-weight:600;font-size:1.04rem;
   color:var(--ink);transition:color .15s}
 .faq-item summary::-webkit-details-marker{display:none}
 .faq-item summary:hover{color:var(--gold)}
@@ -422,14 +451,17 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .req{color:var(--coral-lt)}
 .opt{font-weight:400;color:var(--ink-mute);font-size:.83rem}
 .field input,.field select,.field textarea{
-  width:100%;padding:.82rem .95rem;font:inherit;font-size:.97rem;color:var(--ink);
+  width:100%;padding:.85rem .95rem;font-family:inherit;color:var(--ink);
+  /* 16px is not a style choice: below it, iOS Safari zooms the whole page the
+     moment a field is focused, and the booking form becomes hostile on a phone. */
+  font-size:16px;min-height:48px;
   background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:10px;
   transition:border-color .18s,background .18s}
 .field input::placeholder,.field textarea::placeholder{color:var(--ink-mute);opacity:.8}
 .field input:focus,.field select:focus,.field textarea:focus{
   outline:none;border-color:var(--amber);background:rgba(0,0,0,.4);
   box-shadow:0 0 0 3px rgba(255,154,90,.16)}
-.field textarea{resize:vertical;min-height:110px}
+.field textarea{resize:vertical;min-height:120px;line-height:1.55}
 .field select{appearance:none;cursor:pointer;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff9a5a' stroke-width='2.4' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right .85rem center;background-size:17px;
@@ -439,15 +471,17 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   border-radius:9px;background:rgba(255,154,90,.13);border:1px solid rgba(255,154,90,.34);
   color:var(--sand-100)}
 .field-hint.static{background:none;border:0;padding:.35rem 0 0;color:var(--ink-mute);font-size:.84rem}
-.check{display:flex;align-items:flex-start;gap:.65rem;font-weight:400!important;
-  font-size:.93rem;cursor:pointer;color:var(--ink-soft)!important}
-.check input{width:19px;height:19px;flex:none;margin-top:.15rem;accent-color:var(--coral)}
+.check{display:flex;align-items:flex-start;gap:.7rem;font-weight:400!important;
+  font-size:.95rem;line-height:1.5;cursor:pointer;color:var(--ink-soft)!important;
+  min-height:44px;padding:.25rem 0}
+.check input{width:22px;height:22px;flex:none;margin-top:.1rem;accent-color:var(--coral)}
 .hp{position:absolute;left:-9999px;opacity:0;pointer-events:none}
+.hp input{font-size:16px}
 .booking-form .btn{margin-top:.6rem}
 .booking-form .micro{margin-top:.95rem}
 
 .contact-links{display:grid;gap:.6rem}
-.contact-link{display:flex;align-items:center;gap:.9rem;padding:.9rem 1rem;
+.contact-link{display:flex;align-items:center;gap:.9rem;min-height:56px;padding:.9rem 1rem;
   border-radius:12px;background:rgba(0,0,0,.22);border:1px solid var(--line);
   color:var(--ink-soft);transition:border-color .18s,transform .18s var(--ease)}
 .contact-link:hover{border-color:var(--amber);transform:translateX(3px);color:var(--ink-soft)}
@@ -462,7 +496,8 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
   background:linear-gradient(135deg,var(--amber),var(--coral))}
 .nf-links{list-style:none;padding:0;margin:2rem 0 0;display:flex;flex-wrap:wrap;
   gap:.55rem;justify-content:center}
-.nf-links a{display:block;padding:.55rem 1.1rem;border-radius:100px;font-size:.93rem;
+.nf-links a{display:flex;align-items:center;min-height:44px;padding:.55rem 1.15rem;
+  border-radius:100px;font-size:.95rem;
   background:var(--surface);border:1px solid var(--line);color:var(--ink-soft)}
 .nf-links a:hover{border-color:var(--amber);color:var(--ink)}
 
@@ -474,15 +509,16 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .foot-tag{color:var(--ink-mute);margin-bottom:.4rem}
 .foot-names{font-size:.85rem;color:var(--ink-mute);opacity:.75}
 .foot-social{display:flex;gap:.55rem;margin-top:1.15rem}
-.foot-social a{display:grid;place-items:center;width:40px;height:40px;border-radius:11px;
+.foot-social a{display:grid;place-items:center;width:46px;height:46px;border-radius:12px;
   background:var(--surface);border:1px solid var(--line);color:var(--ink-soft);
   transition:border-color .18s,color .18s,transform .18s var(--ease)}
 .foot-social a:hover{border-color:var(--amber);color:var(--amber);transform:translateY(-2px)}
 .foot-col h3{font-size:.74rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;
   color:var(--gold);margin-bottom:.95rem}
 .foot-col ul{list-style:none;padding:0;margin:0}
-.foot-col li{margin-bottom:.52rem}
-.foot-col a{color:var(--ink-mute);font-size:.92rem}
+.foot-col li{margin-bottom:.15rem}
+.foot-col a{display:flex;align-items:center;min-height:44px;
+  color:var(--ink-mute);font-size:.95rem}
 .foot-col a:hover{color:var(--gold)}
 .foot-contact a{word-break:break-all}
 .foot-friday{margin:1.15rem 0 0;font-size:.84rem;color:var(--ink-mute);line-height:1.5;
@@ -496,21 +532,26 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 .foot-base p{margin:0;font-size:.82rem;color:var(--ink-mute)}
 
 /* ── Sticky mobile action bar ─────────────────────────────────────────────── */
-.mobile-bar{display:none}
-@media (max-width:760px){
-  .mobile-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:120;
-    padding:.6rem .7rem calc(.6rem + env(safe-area-inset-bottom));gap:.5rem;
-    background:rgba(7,23,32,.95);backdrop-filter:blur(16px);
-    border-top:1px solid var(--line)}
-  .mb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-    gap:.18rem;padding:.55rem .3rem;border-radius:11px;font-size:.74rem;font-weight:600;
-    color:var(--ink-soft);background:var(--surface);border:1px solid var(--line)}
-  .mb-item .icon{width:20px;height:20px}
-  .mb-wa{color:#5be584}
-  .mb-primary{flex:1.35;justify-content:center;font-size:.88rem;color:#2a0d0c;border:0;
-    background:linear-gradient(135deg,var(--amber),var(--coral))}
-  body{padding-bottom:76px}
-  .friday-strip-inner{padding-block:1rem}
+/* Mobile first: the sticky action bar is the default. It is the highest-
+   converting element on a phone, so it exists until the header CTA replaces it. */
+.mobile-bar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:120;
+  padding:.6rem .7rem calc(.6rem + env(safe-area-inset-bottom));gap:.5rem;
+  background:rgba(7,23,32,.95);backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+.mb-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.18rem;min-height:52px;padding:.5rem .3rem;border-radius:11px;
+  font-size:.76rem;font-weight:600;line-height:1.2;text-align:center;
+  color:var(--ink-soft);background:var(--surface);border:1px solid var(--line)}
+.mb-item .icon{width:20px;height:20px}
+.mb-wa{color:#5be584}
+.mb-primary{flex:1.35;justify-content:center;font-size:.9rem;color:#2a0d0c;border:0;
+  background:linear-gradient(135deg,var(--amber),var(--coral))}
+/* Clears the fixed bar so nothing hides behind it. */
+body{padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+
+@media (min-width:761px){
+  .mobile-bar{display:none}
+  body{padding-bottom:0}
 }
 
 /* ── Print ────────────────────────────────────────────────────────────────── */
@@ -522,16 +563,16 @@ ul,ol{margin:0 0 1.1em;padding-left:1.15em}
 }
 
 /* ── Small-screen refinements ─────────────────────────────────────────────── */
-@media (max-width:560px){
-  /* Full-width CTAs read as one clear action rather than two ragged pills. */
-  .cta-row{flex-direction:column;align-items:stretch;gap:.65rem}
-  .cta-row .btn{width:100%}
-  .hero{padding-bottom:clamp(3rem,9vw,4.5rem)}
-  .hero-sub{max-width:32ch}
-  .creds-list li{font-size:.9rem;padding:.38rem .85rem}
-  .gig{gap:.95rem;padding:.9rem 1rem}
-  .gig-date{width:54px}
-  .band{padding:clamp(3rem,9vw,4rem) 0}
+/* Mobile default: one full-width action reads as a single clear next step,
+   rather than two ragged pills competing on a narrow screen. */
+.cta-row{flex-direction:column;align-items:stretch;gap:.65rem}
+.cta-row .btn{width:100%}
+
+@media (min-width:561px){
+  .cta-row{flex-direction:row;flex-wrap:wrap;align-items:center;gap:.8rem}
+  .cta-row .btn{width:auto}
+  .gig{gap:1.25rem;padding:1.05rem 1.35rem}
+  .gig-date{width:62px}
 }
 
 /* Contact form heading — keeps the page's heading order valid (h1 -> h2 -> h3). */

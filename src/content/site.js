@@ -19,7 +19,11 @@ const site = {
   // TODO: buy this domain. It matches the Instagram handle (@marceandtony),
   // so it is the one to get. A *.canva.site subdomain CANNOT rank on Google —
   // this single change is the biggest SEO win available to you.
-  url: 'https://marceandtony.com',
+  //
+  // SITE_URL overrides this at build time, which is how the GitHub Pages
+  // deploy points canonical tags and the sitemap at the real published URL.
+  // Once the domain is bought, set it here and it wins everywhere.
+  url: process.env.SITE_URL || 'https://marceandtony.com',
 
   description:
     'Marce & Tony are a bilingual live music duo on Roatán — vocals and guitars ' +

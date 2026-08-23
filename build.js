@@ -10,6 +10,22 @@ const site = require('./src/content/site.js');
 const { abs } = require('./src/layout.js');
 
 const OUT = path.join(__dirname, 'dist');
+
+/* GitHub Pages project sites are served from a subpath —
+   https://<user>.github.io/<repo>/ — so every root-absolute href and src has to
+   be prefixed or the whole site 404s. BASE_PATH is supplied by the deploy
+   workflow; locally it is empty and nothing changes.
+   Set it to '' (or leave it unset) once a real domain is in place. */
+const BASE = (process.env.BASE_PATH || '').replace(/\/$/, '');
+
+/* Rewrites internal links only. Absolute URLs (https://…, mailto:, tel:) and
+   protocol-relative URLs (//…) are left alone, as are the absolute URLs inside
+   the JSON-LD block, which are already built from site.url. */
+function applyBase(html) {
+  if (!BASE) return html;
+  return html.replace(/\s(href|src|action)="\/(?!\/)([^"]*)"/g,
+    (_, attr, rest) => ` ${attr}="${BASE}/${rest}"`);
+}
 const rm = (p) => fs.existsSync(p) && fs.rmSync(p, { recursive: true, force: true });
 const mk = (p) => fs.mkdirSync(p, { recursive: true });
 
@@ -21,7 +37,7 @@ function write(routePath, html) {
   if (routePath.endsWith('.html')) file = path.join(OUT, routePath.replace(/^\//, ''));
   else file = path.join(OUT, routePath.replace(/^\//, ''), 'index.html');
   mk(path.dirname(file));
-  fs.writeFileSync(file, html);
+  fs.writeFileSync(file, applyBase(html));
   return file;
 }
 
@@ -94,13 +110,13 @@ function manifest() {
     name: site.name + ' — Live Music Roatán',
     short_name: site.name,
     description: site.description,
-    start_url: '/',
+    start_url: (BASE || '') + '/',
     display: 'standalone',
     background_color: '#0b1f2a',
     theme_color: '#0b1f2a',
     icons: [
-      { src: '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-      { src: '/img/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any maskable' },
+      { src: BASE + '/favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
+      { src: BASE + '/img/apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any maskable' },
     ],
   }, null, 2);
 }
@@ -172,6 +188,8 @@ function build() {
   copyDir(path.join(__dirname, 'src/assets'), OUT);
   copyDir(path.join(__dirname, 'public'), OUT);
 
+  // Without this, GitHub Pages runs the output through Jekyll.
+  fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap(routes));
   fs.writeFileSync(path.join(OUT, 'robots.txt'), robots());
   fs.writeFileSync(path.join(OUT, 'site.webmanifest'), manifest());
@@ -184,6 +202,7 @@ function build() {
   const todos = (raw.match(/TODO[^\n]*/g) || []).length;
 
   console.log(`\n  Built ${routes.length} pages in ${Date.now() - t0}ms -> dist/`);
+  console.log(`  Site URL: ${site.url}${BASE ? `   (base path ${BASE})` : ''}`);
   routes.forEach(r => console.log(`    ${r.path}`));
   console.log(`\n  sitemap.xml · robots.txt · site.webmanifest · favicon.svg`);
   if (!site.contact.whatsapp)

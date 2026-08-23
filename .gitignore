@@ -6,3 +6,6 @@ dist/
 .netlify/
 preview.html
 pvtest.js
+mobaudit.js
+mobshots.js
+subpathtest.js

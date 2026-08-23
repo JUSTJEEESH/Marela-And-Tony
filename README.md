@@ -106,26 +106,62 @@ what they genuinely play.
 
 ---
 
-## Deploying (free, about five minutes)
+## It is already hosted
 
-**Netlify** is the recommendation, because the booking form works with no
-server and no third-party service.
+Every push to this branch builds the site and publishes it to **GitHub Pages**
+automatically — `.github/workflows/deploy.yml` does the whole thing, including
+switching Pages on the first time it runs. Nothing to configure by hand.
 
-1. Push this repo to GitHub.
-2. netlify.com → *Add new site* → *Import an existing project* → pick the repo.
-3. Build command `npm run build`, publish directory `dist`. Netlify reads the
-   rest from `netlify.toml`.
-4. *Domain settings* → add `marceandtony.com`.
+**Live at:** https://justjeeesh.github.io/Marela-And-Tony/
 
-Form submissions then appear under **Forms** in the Netlify dashboard.
-Turn on email notifications so nothing sits unread — a missed enquiry is a
-missed booking.
+To check on a deploy, open the **Actions** tab in the repo. Green tick means
+it is live; a run takes about a minute.
 
-Vercel, Cloudflare Pages and GitHub Pages all work too, with the same build
-command and output directory. On those hosts the booking form needs a service
-like [Formspree](https://formspree.io) instead — swap the form's `action` in
-`src/pages/contact.js` for your Formspree endpoint and delete the
-`data-netlify` attribute.
+### About that URL
+
+A GitHub Pages project site is served from a subfolder
+(`/Marela-And-Tony/`), so the build takes two environment variables:
+
+| Variable | Purpose |
+|---|---|
+| `SITE_URL` | The full public URL. Used for canonical tags, Open Graph and the sitemap. |
+| `BASE_PATH` | The path prefix. Prepended to every internal link, image and stylesheet. |
+
+The workflow supplies both from the Pages configuration, so they are always
+correct. Locally, both are empty and the site builds at the root as normal.
+
+```bash
+npm run build         # normal local build, served from /
+npm run serve:pages   # build exactly as GitHub Pages does, and preview it
+```
+
+### Pointing a real domain at it
+
+Once `marceandtony.com` is bought, this becomes simpler, not harder:
+
+1. At the registrar, add four `A` records for the apex domain pointing at
+   `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and
+   `185.199.111.153`, plus a `CNAME` for `www` pointing at
+   `justjeeesh.github.io`.
+2. In the repo: **Settings → Pages → Custom domain**, enter the domain, and
+   tick **Enforce HTTPS** once the certificate is issued.
+3. Set `url` in `src/content/site.js` to `https://marceandtony.com` and delete
+   the `SITE_URL` and `BASE_PATH` lines from the workflow's build step — the
+   site then lives at the root and the prefix disappears.
+
+### Other hosts
+
+Netlify, Vercel and Cloudflare Pages all work with build command
+`npm run build` and publish directory `dist`. A `netlify.toml` is included.
+On Netlify the booking form works with no extra service; elsewhere point the
+form's `action` in `src/pages/contact.js` at a [Formspree](https://formspree.io)
+endpoint and drop the `data-netlify` attribute.
+
+**One thing to know about the form on GitHub Pages:** Pages serves static files
+only, so it cannot receive a form submission. Until a form backend is connected,
+the **email and WhatsApp buttons are what actually take bookings** — which is
+another reason to add that WhatsApp number. Formspree's free tier handles this
+in about five minutes if you want the form live too.
 
 ---
 
@@ -194,6 +230,32 @@ arrangement ever changes, set `enabled: false` and every trace disappears.
 
 ---
 
+## Built mobile-first
+
+Most people who find this site will be on a phone — a tourist looking up music
+for tonight, or a bride scrolling in bed at 11pm. So the phone layout is the
+real one and the desktop layout is the enhancement, not the other way round.
+
+In practice that means:
+
+- **Every breakpoint is `min-width`.** The stylesheet's base rules *are* the
+  mobile design; wider screens only add to them. There is not a single
+  `max-width` media query in the file.
+- **A sticky action bar** sits at the bottom of every page on a phone with
+  email, WhatsApp and *Check a date* always within thumb reach.
+- **The navigation is a drawer by default** with 52px rows, becoming a
+  horizontal bar only at 1081px where there is genuinely room for one.
+- **Form fields are 16px and 48px tall.** Below 16px, iOS Safari zooms the
+  whole page the moment a field is focused, which makes a booking form
+  miserable to fill in on a phone. This is the single most common mobile bug
+  on small-business sites.
+- **Every tap target is at least 44px.** Verified automatically at 320, 360,
+  390, 414 and 768px across seven pages — the same check also proves no page
+  scrolls sideways at any of those widths.
+- Safe-area insets are respected, so nothing hides behind the iPhone home bar.
+
+---
+
 ## Project layout
 
 ```
@@ -205,5 +267,9 @@ src/assets/css/         the stylesheet
 src/assets/js/          menu, FAQ accordion, Friday detector
 public/                 images and files copied straight through
 build.js                the build. plain Node, no dependencies
+server.js               local preview server
+pagesim.js              previews the site exactly as GitHub Pages serves it
+preview.js              bundles everything into one shareable HTML file
+.github/workflows/      the deploy — runs on every push
 dist/                   generated output — never edit, never commit
 ```
