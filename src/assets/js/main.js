@@ -112,3 +112,29 @@
   });
 
 })();
+
+/* ── Click-to-play YouTube ──────────────────────────────────────────────────
+   Cards are plain links to YouTube until this runs; a tap then swaps in the
+   real player inline, muted-free and autoplaying, with zero YouTube weight
+   loaded before that tap. */
+(function () {
+  'use strict';
+  document.addEventListener('click', function (e) {
+    var card = e.target.closest('.yt[data-yt]');
+    if (!card || card.classList.contains('playing')) return;
+    e.preventDefault();
+    var id = card.getAttribute('data-yt');
+    var thumb = card.querySelector('.yt-thumb');
+    var iframe = document.createElement('iframe');
+    iframe.src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id) +
+      '?autoplay=1&rel=0&modestbranding=1';
+    iframe.title = card.getAttribute('aria-label') || 'Video player';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share';
+    iframe.allowFullscreen = true;
+    thumb.innerHTML = '';
+    thumb.appendChild(iframe);
+    card.classList.add('playing');
+    card.removeAttribute('href');
+    card.setAttribute('role', 'group');
+  });
+})();

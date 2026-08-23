@@ -41,6 +41,8 @@ module.exports = function about() {
 
 ${C.credentialRow()}
 
+${C.videoSection('Watch them play')}
+
 <section class="band">
   <div class="wrap">
     <div class="members">${members}</div>
@@ -51,18 +53,9 @@ ${C.credentialRow()}
   <div class="wrap narrow">
     <span class="eyebrow">The sound</span>
     <h2 id="sound-h" class="h-section">Two guitars, two voices, two languages</h2>
-    <p class="lede">Marce &amp; Tony is a duo in the proper sense — not a singer with
-       backing, but two musicians who both play and both sing.</p>
-    <p>The repertoire runs from Latin and Spanish-language standards through bossa
-       and jazz, Caribbean and Garífuna music, and the English-language songs that
-       an international guest list already knows by heart. Tony brings a jazz and
-       world-music guitarist's ear and fifteen years inside traditional Garífuna
-       rhythm — the music of this coast. Marcela brings a songwriter's instinct for
-       the shape of an evening and a voice built for rooms where people are meant to
-       be talking as well as listening.</p>
-    <p>Practically: we are entirely self-contained. Our own PA, our own microphones,
-       our own cabling, and battery power for beach ceremonies where there is no
-       outlet within a hundred metres. You do not need to arrange anything for us.</p>
+    <p class="lede">Latin and Spanish-language standards, bossa and jazz, Caribbean and
+       Garífuna music, and the English-language classics your guests already know.
+       Fully self-contained — our own PA, microphones and battery power for the beach.</p>
     <p><a class="text-link" href="/songs/">See the full song list <span aria-hidden="true">&rarr;</span></a></p>
   </div>
 </section>

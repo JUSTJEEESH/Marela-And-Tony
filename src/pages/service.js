@@ -52,7 +52,6 @@ ${C.credentialRow()}
   </div>
 </section>
 
-${C.processSteps()}
 ${C.testimonials()}
 ${C.faqList(svc.faq, 'Questions about ' + svc.title.toLowerCase())}
 

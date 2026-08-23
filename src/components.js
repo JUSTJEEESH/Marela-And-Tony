@@ -107,24 +107,6 @@ function testimonials() {
 </section>`;
 }
 
-/* ── Booking process ──────────────────────────────────────────────────────── */
-function processSteps() {
-  return `
-<section class="band" aria-labelledby="proc-h">
-  <div class="wrap">
-    <h2 id="proc-h" class="h-section center">Booking us takes about four minutes</h2>
-    <ol class="steps">
-      ${site.process.map((p, i) => `
-      <li>
-        <span class="step-n">${i + 1}</span>
-        <h3>${esc(p.step)}</h3>
-        <p>${esc(p.text)}</p>
-      </li>`).join('')}
-    </ol>
-  </div>
-</section>`;
-}
-
 /* ── Upcoming gigs. Past dates are filtered at build time. ─────────────────── */
 function upcomingGigs(limit) {
   const today = new Date().toISOString().slice(0, 10);
@@ -183,8 +165,7 @@ function gigSchema() {
     }));
 }
 
-/* ── The Friday block. Charming, honest, and quietly great local SEO because
-      it names a real venue, a real band and a real recurring time. ────────── */
+/* ── The Friday block. Short: the card carries it. ────────────────────────── */
 function fridayBlock() {
   const f = site.fridayRule;
   if (!f.enabled) return '';
@@ -193,7 +174,9 @@ function fridayBlock() {
   <div class="wrap narrow">
     <span class="eyebrow">The one exception</span>
     <h2 id="fri-h" class="h-section">${esc(f.day)} nights, Tony is taken</h2>
-    <p class="lede">${esc(f.long)}</p>
+    <p class="lede">${esc(f.short)} It is the best free show in West End —
+       come down, order a rum, say hello. Every other night, and Friday daytime,
+       is bookable.</p>
     <div class="friday-card">
       <div class="fc-time">
         <span class="fc-day">${esc(f.day)}s</span>
@@ -202,15 +185,64 @@ function fridayBlock() {
       <div class="fc-body">
         <h3>${esc(f.band)}</h3>
         <p>${esc(f.venue)} &middot; ${esc(f.venueArea)}</p>
-        <p class="fc-note">Tony on guitar. Free to walk in. Best sunset on Half Moon Bay.</p>
+        <p class="fc-note">Tony on guitar. Free to walk in.</p>
       </div>
     </div>
-    <p class="micro center">Every other night of the week &mdash; and Friday daytime &mdash; is bookable.</p>
   </div>
 </section>`;
 }
 
+/* ── Videos: the highest-converting content on the site ───────────────────── *
+   Click-to-play facade: renders as a thumbnail + play button (a plain link to
+   YouTube when JS is off), and swaps in the real player only when tapped, so
+   the page stays fast. The first video gets the feature slot.                */
+function videoSection(heading = 'Hear us before you book us') {
+  const v = site.videos || [];
+  if (!v.length) return '';
+  const card = (x, feature) => `
+  <a class="yt${feature ? ' yt-feature' : ''}" data-yt="${esc(x.id)}"
+     href="https://www.youtube.com/watch?v=${esc(x.id)}" target="_blank" rel="noopener"
+     aria-label="Play video: ${esc(x.title)}">
+    <span class="yt-thumb">
+      <img src="https://i.ytimg.com/vi/${esc(x.id)}/hqdefault.jpg"
+           alt="" loading="lazy" decoding="async"
+           onerror="this.closest('.yt').classList.add('no-thumb')">
+      <span class="yt-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5Z"/></svg></span>
+    </span>
+    <span class="yt-meta">
+      <b>${esc(x.title)}</b>
+      ${x.note ? `<em>${esc(x.note)}</em>` : ''}
+    </span>
+  </a>`;
+  return `
+<section class="band video-band" id="listen" aria-labelledby="vid-h">
+  <div class="wrap">
+    <span class="eyebrow center-block">Press play</span>
+    <h2 id="vid-h" class="h-section center">${esc(heading)}</h2>
+    <div class="video-grid${v.length === 1 ? ' one' : ''}">
+      ${v.map((x, i) => card(x, i === 0)).join('')}
+    </div>
+    <p class="micro center video-micro">Tap to play. More on
+      <a href="${esc(site.social.instagram)}" target="_blank" rel="noopener">Instagram</a>${site.social.youtube ? ` and <a href="${esc(site.social.youtube)}" target="_blank" rel="noopener">YouTube</a>` : ''}.</p>
+  </div>
+</section>`;
+}
+
+/* VideoObject structured data — makes the clips eligible for video results. */
+function videoSchema() {
+  return (site.videos || []).map(v => ({
+    '@type': 'VideoObject',
+    name: v.title,
+    description: (v.note ? v.note + '. ' : '') + 'Live performance video — ' + site.name + ', live music on Roatán.',
+    thumbnailUrl: `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`,
+    embedUrl: `https://www.youtube-nocookie.com/embed/${v.id}`,
+    contentUrl: `https://www.youtube.com/watch?v=${v.id}`,
+    uploadDate: '2021-02-21',
+    publisher: { '@id': site.url.replace(/\/$/, '') + '/#musicgroup' },
+  }));
+}
+
 module.exports = {
   ctaButtons, ctaSection, faqList, credentialRow, islandProof, serviceCards,
-  testimonials, processSteps, upcomingGigs, gigSchema, fridayBlock,
+  testimonials, upcomingGigs, gigSchema, fridayBlock, videoSection, videoSchema,
 };

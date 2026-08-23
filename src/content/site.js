@@ -55,6 +55,25 @@ const site = {
     tonySite:  'https://www.tonypenalva.com/',
   },
 
+  /* -- 2b. VIDEOS -- the most important content on the site ---------------- *
+     Nobody books a band they have not heard. Each entry here becomes a
+     click-to-play player on the homepage and the About page.
+
+     To add a video: take the YouTube URL, e.g.
+        https://www.youtube.com/watch?v=S5G4pfl3DJA
+     and copy the part after "v=" as the id. That's it.
+
+     Put the best 30-seconds-in video FIRST -- it gets the big slot.          */
+  videos: [
+    {
+      id: 'S5G4pfl3DJA',
+      title: 'Amanecer — The Garífuna Experiment, live',
+      note: 'Tony Peñalva on guitar',
+    },
+    // TODO: add Marcela's videos and the duo videos from the Canva page here:
+    // { id: 'XXXXXXXXXXX', title: 'Song name — where it was filmed', note: '' },
+  ],
+
   /* ── 3. THE PITCH ───────────────────────────────────────────────────────── *
      This is the whole business in three lines. Their Canva page buries it on
      page two; here it is the first thing anybody reads.                      */
@@ -102,12 +121,9 @@ const site = {
         role: 'Singer-Songwriter · Vocals & Guitar',
         photo: '/img/marcela.jpg',                       // TODO: add real photo
         bio:
-          'Marcela is a bilingual (English/Spanish) singer-songwriter and ' +
-          'guitarist known for her stage presence and her range across a room. ' +
-          'Based in New York City from 2011 to 2025 and now in the Bay Islands, ' +
-          'she specialises in building warm, memorable atmospheres — the kind ' +
-          'of set that makes a cocktail hour feel like the point of the evening ' +
-          'rather than the wait before it.',
+          'Bilingual singer-songwriter and guitarist. Fourteen years on New ' +
+          'York stages, now in the Bay Islands — known for warm, atmospheric ' +
+          'sets that make a cocktail hour feel like the point of the evening.',
         creditsTitle: 'Selected performances',
         credits: [
           'New York: Rockwood Music Hall, ShapeShifter Lab, Shrine, Silvana, Arlene’s Grocery, Branded Saloon, Music Inn World Instruments',
@@ -128,11 +144,9 @@ const site = {
         role: 'Guitarist · Composer',
         photo: '/img/tony.jpg',                          // TODO: add real photo
         bio:
-          'Tony is a bilingual (English/Spanish) Honduran guitarist and ' +
-          'composer, based in New York City from 2006 to 2025 and now in the ' +
-          'Bay Islands. He is known for his versatility across genres, ' +
-          'specialising in jazz and world music, and for fusing contemporary ' +
-          'sound with traditional Garífuna rhythm — the music of this coast.',
+          'Honduran guitarist and composer. Nineteen years in New York, ' +
+          'fifteen of them with Garífuna legend Aurelio Martínez — jazz and ' +
+          'world music fused with the traditional rhythm of this coast.',
         creditsTitle: 'Selected credits',
         credits: [
           'Fifteen-year core member and collaborator with world-renowned Garífuna artist Aurelio Martínez (Garífuna Soul)',
@@ -437,40 +451,22 @@ const site = {
     'French Harbour', 'Punta Gorda', 'Camp Bay', 'Utila', 'Guanaja',
   ],
 
-  /* ── 10. HOW BOOKING WORKS ──────────────────────────────────────────────── */
-  process: [
-    { step: 'Tell us the details', text: 'Date, location, type of event and rough headcount. That is genuinely all we need to quote you.' },
-    { step: 'We send a price',     text: 'A straight number with nothing hidden underneath it, usually the same day, and we hold your date while you decide.' },
-    { step: 'We plan the music',   text: 'Songs, timeline, where we set up, where the power is. For weddings and proposals we do this on a call.' },
-    { step: 'We show up early',    text: 'Set up, soundchecked and out of sight before your first guest arrives. You will not have to look for us.' },
-  ],
-
-  /* ── 11. GENERAL FAQ (feeds Google's FAQ rich results) ──────────────────── */
+  /* -- 11. GENERAL FAQ (feeds Google's FAQ rich results) ------------------- */
   faq: [
-    { q: 'How do we book Marce & Tony?',
-      a: 'Email marcebookings@gmail.com with your date, location, event type and approximate size, and you will get a quote back — usually the same day. There is a booking form on this site that sends exactly the right details in one go.' },
-    { q: 'What areas of Roatán do you cover?',
-      a: 'All of it — West Bay, West End, Sandy Bay, Coxen Hole, French Harbour and the East End. We also travel to Utila and Guanaja for weddings and private events.' },
+    { q: 'How do we book you?',
+      a: 'Email marcebookings@gmail.com — or use the form on this site — with your date, location, event type and rough headcount. You get a straight price back, usually the same day.' },
     { q: 'Are you available on Fridays?',
-      a: 'Daytime yes, evenings no. Tony plays guitar with The Josh Green Band at Sundowner’s on Half Moon Bay every Friday from 7 to 9pm, so Friday evenings are permanently spoken for. Anything finishing before 6pm on a Friday is fine, and every other night of the week is open.' },
+      a: 'Daytime yes, evenings no. Tony plays guitar with The Josh Green Band at Sundowner’s on Half Moon Bay every Friday from 7 to 9pm. Every other night of the week is open.' },
     { q: 'Do you play in English and Spanish?',
-      a: 'Both, fluently. Marcela and Tony are both bilingual and we move between languages inside a single set, which matters when a guest list is split across countries.' },
+      a: 'Both, fluently, and we move between them inside a single set — which matters when your guest list is split across countries.' },
     { q: 'Do you bring your own sound system?',
-      a: 'Yes. We are fully self-contained — PA, microphones, stands and cabling — and we can run on battery power for beach ceremonies with no outlet nearby.' },
+      a: 'Yes. PA, microphones, stands and cabling — and we can run on battery power for beach ceremonies with no outlet nearby.' },
     { q: 'Can you learn a specific song for our event?',
-      a: 'Yes, and it is included rather than an upsell. Send it when you book and it will be ready on the day. This matters most for first dances and proposals.' },
+      a: 'Yes, and it is included. Send it when you book and it will be ready on the day. This matters most for first dances and proposals.' },
     { q: 'How much do you charge?',
-      a: 'It depends on set length, location and whether we are providing sound for speeches. Send us your date and details and you will get a straight number back.' },
-    { q: 'How far in advance should we book?',
-      a: 'For weddings in high season — roughly December through April — six to twelve months is sensible. For a venue night or private event in the off-season, a week or two is usually enough.' },
-    { q: 'What kind of music do you play?',
-      a: 'Bilingual vocals and guitars across Latin and Spanish-language repertoire, bossa and jazz standards, Caribbean and Garífuna music, and the English-language classics people actually want to sing along to. Tony also composes and arranges bespoke music for events.' },
-    { q: 'What happens if it rains?',
-      a: 'We move under cover and keep playing. Rain is part of life here and it never costs you extra.' },
-    { q: 'Do you take requests?',
-      a: 'Always. Send a list ahead of time and we will build the set around it.' },
-    { q: 'Who are Marce & Tony?',
-      a: 'Marcela Rivera is a bilingual singer-songwriter and guitarist who spent 2011 to 2025 performing in New York City. Tony Peñalva is a Honduran guitarist and composer who was based in New York from 2006 to 2025, spent fifteen years as a core collaborator with Garífuna artist Aurelio Martínez, and leads The Garífuna Experiment. They now live and perform in the Bay Islands.' },
+      a: 'It depends on set length, location and whether we are providing sound for speeches. Send your date and details and you get a straight number back — no runaround.' },
+    { q: 'What areas of Roatán do you cover?',
+      a: 'All of it — West Bay, West End, Sandy Bay, French Harbour and the East End, plus Utila and Guanaja for weddings and private events.' },
   ],
 };
 

@@ -59,9 +59,24 @@ format, digits only — Honduras is country code `504`, so `50412345678`. Every
 WhatsApp button on the site turns itself on automatically. Leave it blank and
 they stay hidden.
 
-### 3. Add real photos
+### 3. Add the videos and photos
 
-Two files, and they carry more weight than any paragraph on the site:
+**Videos first — nobody books a band they have not heard.** The homepage now
+has a "Hear us before you book us" section wired to `videos` in
+`src/content/site.js`. One real video is already in (Tony's Garífuna
+Experiment live session). To add the rest, take each YouTube URL —
+`https://www.youtube.com/watch?v=XXXXXXXXXXX` — and add one line:
+
+```js
+{ id: 'XXXXXXXXXXX', title: 'Song — where it was filmed', note: '' },
+```
+
+The first video in the list gets the big feature slot, so lead with the one
+that sounds best 30 seconds in. Cards are plain YouTube links until tapped,
+so the page stays fast.
+
+**Then photos.** Two files, and they carry more weight than any paragraph on
+the site:
 
 | File | What it should be |
 |---|---|
