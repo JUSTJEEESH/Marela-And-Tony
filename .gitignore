@@ -4,3 +4,5 @@ dist/
 *.log
 .env
 .netlify/
+preview.html
+pvtest.js
