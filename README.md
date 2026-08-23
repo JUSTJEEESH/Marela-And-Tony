@@ -108,60 +108,78 @@ what they genuinely play.
 
 ## It is already hosted
 
-Every push to this branch builds the site and publishes it to **GitHub Pages**
-automatically — `.github/workflows/deploy.yml` does the whole thing, including
-switching Pages on the first time it runs. Nothing to configure by hand.
-
 **Live at:** https://justjeeesh.github.io/Marela-And-Tony/
 
-To check on a deploy, open the **Actions** tab in the repo. Green tick means
-it is live; a run takes about a minute.
+Every push to this branch rebuilds the site and publishes it automatically.
+`.github/workflows/deploy.yml` builds into `dist/` and force-pushes that to the
+`gh-pages` branch; GitHub then runs its own Pages build. Watch it in the
+**Actions** tab — a deploy takes about a minute.
+
+Nothing needs configuring by hand. The workflow checks every expected file
+exists before publishing, so a broken build stops rather than replacing a
+working site.
+
+<details>
+<summary>Why the gh-pages branch rather than the newer Actions deployment</summary>
+
+The modern `actions/deploy-pages` route needs the Pages **source** set to
+"GitHub Actions", and changing that setting requires a token with admin rights
+on the repository. The automatic `GITHUB_TOKEN` is not permitted to do it — the
+job fails with `Resource not accessible by integration`. Pushing a branch needs
+only `contents: write`, which the workflow token does have, so that is the route
+used here. It is equally reliable and needs no manual setup.
+</details>
 
 ### About that URL
 
-A GitHub Pages project site is served from a subfolder
-(`/Marela-And-Tony/`), so the build takes two environment variables:
+A GitHub Pages project site is served from a subfolder (`/Marela-And-Tony/`),
+which would break every root-absolute link. So the build takes these
+environment variables:
 
 | Variable | Purpose |
 |---|---|
-| `SITE_URL` | The full public URL. Used for canonical tags, Open Graph and the sitemap. |
-| `BASE_PATH` | The path prefix. Prepended to every internal link, image and stylesheet. |
+| `SITE_URL` | Full public URL — canonical tags, Open Graph, sitemap, structured data. |
+| `BASE_PATH` | Path prefix — prepended to every internal link, image and stylesheet. |
+| `CNAME` | Optional. Writes a CNAME file so a custom domain survives each deploy. |
 
-The workflow supplies both from the Pages configuration, so they are always
-correct. Locally, both are empty and the site builds at the root as normal.
+The workflow derives the first two from the repository name itself, so they stay
+correct even if the repo is renamed. Locally both are empty and the site builds
+at the root as normal.
 
 ```bash
 npm run build         # normal local build, served from /
-npm run serve:pages   # build exactly as GitHub Pages does, and preview it
+npm run serve         # build and preview at http://localhost:4321
+npm run serve:pages   # build and preview exactly as GitHub Pages serves it
 ```
 
-### Pointing a real domain at it
+### Pointing marceandtony.com at it
 
-Once `marceandtony.com` is bought, this becomes simpler, not harder:
+Once the domain is bought this gets simpler, not harder:
 
 1. At the registrar, add four `A` records for the apex domain pointing at
    `185.199.108.153`, `185.199.109.153`, `185.199.110.153` and
-   `185.199.111.153`, plus a `CNAME` for `www` pointing at
+   `185.199.111.153`, plus a `CNAME` record for `www` pointing at
    `justjeeesh.github.io`.
-2. In the repo: **Settings → Pages → Custom domain**, enter the domain, and
-   tick **Enforce HTTPS** once the certificate is issued.
-3. Set `url` in `src/content/site.js` to `https://marceandtony.com` and delete
-   the `SITE_URL` and `BASE_PATH` lines from the workflow's build step — the
-   site then lives at the root and the prefix disappears.
+2. In `.github/workflows/deploy.yml`, add `CNAME: marceandtony.com` to the build
+   step's `env:`, change `SITE_URL` to `https://marceandtony.com` and set
+   `BASE_PATH` to `""`.
+3. Set `url` in `src/content/site.js` to `https://marceandtony.com`.
+4. In **Settings → Pages**, tick **Enforce HTTPS** once the certificate issues
+   (usually within the hour).
 
-### Other hosts
+The site then lives at the root and the `/Marela-And-Tony/` prefix disappears
+everywhere on its own.
 
-Netlify, Vercel and Cloudflare Pages all work with build command
-`npm run build` and publish directory `dist`. A `netlify.toml` is included.
-On Netlify the booking form works with no extra service; elsewhere point the
-form's `action` in `src/pages/contact.js` at a [Formspree](https://formspree.io)
-endpoint and drop the `data-netlify` attribute.
+### A note on the booking form
 
-**One thing to know about the form on GitHub Pages:** Pages serves static files
-only, so it cannot receive a form submission. Until a form backend is connected,
-the **email and WhatsApp buttons are what actually take bookings** — which is
-another reason to add that WhatsApp number. Formspree's free tier handles this
-in about five minutes if you want the form live too.
+GitHub Pages serves static files only, so it cannot receive a form submission.
+Until a form backend is connected, **the email and WhatsApp buttons are what
+actually take bookings** — one more reason to add that WhatsApp number.
+
+To make the form itself live, point its `action` in `src/pages/contact.js` at a
+[Formspree](https://formspree.io) endpoint (free tier, about five minutes) and
+delete the `data-netlify` attribute. Alternatively deploy to Netlify instead —
+a `netlify.toml` is included and the form works there with no extra service.
 
 ---
 

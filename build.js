@@ -190,6 +190,14 @@ function build() {
 
   // Without this, GitHub Pages runs the output through Jekyll.
   fs.writeFileSync(path.join(OUT, '.nojekyll'), '');
+
+  /* Branch-based GitHub Pages reads the custom domain from a CNAME file in the
+     published directory. Once marceandtony.com is bought, set CNAME in the
+     deploy workflow and the domain sticks across every deploy — without this
+     file, GitHub clears the custom domain on the next publish. */
+  if (process.env.CNAME) {
+    fs.writeFileSync(path.join(OUT, 'CNAME'), process.env.CNAME.trim() + '\n');
+  }
   fs.writeFileSync(path.join(OUT, 'sitemap.xml'), sitemap(routes));
   fs.writeFileSync(path.join(OUT, 'robots.txt'), robots());
   fs.writeFileSync(path.join(OUT, 'site.webmanifest'), manifest());

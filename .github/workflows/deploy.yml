@@ -1,8 +1,14 @@
 # Builds the site and publishes it to GitHub Pages on every push.
 #
-# The first successful run also switches Pages on for this repository
-# (configure-pages with enablement: true), so there is nothing to click in
-# Settings beforehand.
+# Pages for this repository is served from the `gh-pages` branch, so this
+# workflow builds into dist/ and force-pushes that directory there. GitHub then
+# runs its own "pages build and deployment" job automatically.
+#
+# Why not actions/deploy-pages? That route needs the Pages *source* set to
+# "GitHub Actions", and switching it requires a token with admin rights on the
+# repository — the automatic GITHUB_TOKEN is not allowed to do it and the job
+# fails with "Resource not accessible by integration". Pushing a branch needs
+# only `contents: write`, which the workflow token does have.
 name: Deploy to GitHub Pages
 
 on:
@@ -13,18 +19,16 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Never let two deploys race; queue them instead of cancelling, so the last
-# push always ends up being the version that is live.
+# Queue deploys rather than cancelling them, so the newest push is always the
+# version that ends up live.
 concurrency:
-  group: github-pages
+  group: gh-pages-deploy
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repository
@@ -33,44 +37,58 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
-      - name: Configure Pages
-        id: pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
+      # A project site lives at https://<owner>.github.io/<repo>/, so the build
+      # needs the full URL (canonical tags, Open Graph, sitemap) and the path
+      # prefix (every internal href and src). Both are derived from the repo
+      # itself so nothing here has to be edited if it is ever renamed or forked.
+      # The owner is lower-cased because github.io hostnames are lower-case.
+      - name: Work out the published URL
+        id: url
+        run: |
+          set -euo pipefail
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          OWNER_LC="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "site_url=https://${OWNER_LC}.github.io/${REPO}" >> "$GITHUB_OUTPUT"
+          echo "base_path=/${REPO}" >> "$GITHUB_OUTPUT"
+          echo "Publishing to https://${OWNER_LC}.github.io/${REPO}/"
 
-      # A project site is served from https://<user>.github.io/<repo>/, so the
-      # build needs both the full URL (for canonical tags, Open Graph and the
-      # sitemap) and the path prefix (for every internal href and src).
       - name: Build the site
         env:
-          SITE_URL: ${{ steps.pages.outputs.base_url }}
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          SITE_URL: ${{ steps.url.outputs.site_url }}
+          BASE_PATH: ${{ steps.url.outputs.base_path }}
         run: node build.js
 
+      # Deploying a half-built site is worse than not deploying, so fail here
+      # instead. Also catches a page that silently rendered empty.
       - name: Check the build produced what we expect
         run: |
-          set -e
+          set -euo pipefail
           for f in index.html 404.html sitemap.xml robots.txt .nojekyll \
-                   weddings/index.html contact/index.html css/style.css js/main.js; do
+                   weddings/index.html private-and-corporate-events/index.html \
+                   hotels-restaurants-and-venues/index.html proposals/index.html \
+                   contact/index.html about/index.html songs/index.html \
+                   live-music-roatan/index.html css/style.css js/main.js; do
             test -s "dist/$f" || { echo "MISSING or empty: dist/$f"; exit 1; }
           done
-          echo "All expected files present."
+          grep -q 'rel="canonical"' dist/index.html || { echo "no canonical tag"; exit 1; }
+          grep -q 'application/ld+json' dist/index.html || { echo "no structured data"; exit 1; }
+          echo "All expected files present and well formed."
 
-      - name: Upload the site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish to the gh-pages branch
+        run: |
+          set -euo pipefail
+          cd dist
+          git init -q -b gh-pages
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Publish ${GITHUB_SHA::7}"
+          git push -f \
+            "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" \
+            gh-pages
+          echo "Pushed. GitHub will now run its own Pages build."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
