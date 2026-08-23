@@ -66,13 +66,16 @@ jobs:
       - name: Check the build produced what we expect
         run: |
           set -euo pipefail
-          for f in index.html 404.html sitemap.xml robots.txt .nojekyll \
+          for f in index.html 404.html sitemap.xml robots.txt \
                    weddings/index.html private-and-corporate-events/index.html \
                    hotels-restaurants-and-venues/index.html proposals/index.html \
                    contact/index.html about/index.html songs/index.html \
                    live-music-roatan/index.html css/style.css js/main.js; do
             test -s "dist/$f" || { echo "MISSING or empty: dist/$f"; exit 1; }
           done
+          # .nojekyll is a marker file and is meant to be zero bytes, so it is
+          # checked for existence rather than for content.
+          test -f dist/.nojekyll || { echo "MISSING: dist/.nojekyll"; exit 1; }
           grep -q 'rel="canonical"' dist/index.html || { echo "no canonical tag"; exit 1; }
           grep -q 'application/ld+json' dist/index.html || { echo "no structured data"; exit 1; }
           echo "All expected files present and well formed."
